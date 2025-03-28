@@ -28,7 +28,11 @@ class WebdavXml {
   static List<XmlElement> findElements(XmlElement element, String tag) =>
       element.findElements(tag, namespace: '*').toList();
 
-  static List<File> toFiles(String path, String xmlStr, {skipSelf = true}) {
+  static List<File> toFiles(
+    String uriSuffix,
+    String xmlStr, {
+    skipSelf = true,
+  }) {
     var files = <File>[];
     var xmlDocument = XmlDocument.parse(xmlStr);
     List<XmlElement> list = findAllElements(xmlDocument, 'response');
@@ -96,7 +100,11 @@ class WebdavXml {
             //
             var str = Uri.decodeFull(href);
             var name = path2Name(str);
-            var filePath = path + name + (isDir ? '/' : '');
+            var filePath = fixPrefix(str.replaceFirst(uriSuffix, ""));
+
+            if (isDir) {
+              filePath = fixSlash(filePath);
+            }
 
             files.add(File(
               path: filePath,

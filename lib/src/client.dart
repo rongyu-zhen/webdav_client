@@ -13,6 +13,8 @@ class Client {
   /// WebDAV url
   final String uri;
 
+  final String uriSuffix;
+
   /// Wrapped http client
   WdDio c;
 
@@ -27,7 +29,7 @@ class Client {
     required this.c,
     required this.auth,
     this.debug = false,
-  });
+  }): uriSuffix = getUriSuffix(uri);
 
   // methods--------------------------------
 
@@ -68,7 +70,7 @@ class Client {
         .wdPropfind(this, path, true, fileXmlStr, cancelToken: cancelToken);
 
     String str = resp.data;
-    return WebdavXml.toFiles(path, str);
+    return WebdavXml.toFiles(uriSuffix, str);
   }
 
   /// Read a single files properties
@@ -79,7 +81,7 @@ class Client {
         .wdPropfind(this, path, true, fileXmlStr, cancelToken: cancelToken);
 
     String str = resp.data;
-    return WebdavXml.toFiles(path, str, skipSelf: false).first;
+    return WebdavXml.toFiles(uriSuffix, str, skipSelf: false).first;
   }
 
   /// Create a folder

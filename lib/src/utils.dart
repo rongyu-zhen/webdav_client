@@ -102,12 +102,17 @@ String fixSlash(String s) {
   return s;
 }
 
-// 添加 '/' 前后缀
-String fixSlashes(String s) {
+// 添加 '/' 前缀
+String fixPrefix(String s) {
   if (!s.startsWith('/')) {
     s = '/${s}';
   }
-  return fixSlash(s);
+  return s;
+}
+
+// 添加 '/' 前后缀
+String fixSlashes(String s) {
+  return fixSlash(fixPrefix(s));
 }
 
 // 使用 '/' 连接path
@@ -126,4 +131,8 @@ String path2Name(String path) {
     return '/';
   }
   return str;
+}
+
+String getUriSuffix(String uri) {
+  return fixSlashes(uri.split("/").sublist(3).join("/"));
 }
