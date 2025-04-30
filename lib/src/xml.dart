@@ -29,7 +29,7 @@ class WebdavXml {
       element.findElements(tag, namespace: '*').toList();
 
   static List<File> toFiles(
-    String uriSuffix,
+    String uriPath,
     String xmlStr, {
     skipSelf = true,
   }) {
@@ -40,14 +40,14 @@ class WebdavXml {
     list.forEach((element) {
       // name
       final hrefElements = findElements(element, 'href');
-      String href = hrefElements.isNotEmpty ? hrefElements.single.text : '';
+      String href = hrefElements.isNotEmpty ? hrefElements.single.innerText : '';
 
       // propstats
       var props = findElements(element, 'propstat');
       // propstat
       for (var propstat in props) {
         // ignore != 200
-        if (findElements(propstat, 'status').single.text.contains('200')) {
+        if (findElements(propstat, 'status').single.innerText.contains('200')) {
           // prop
           for (var prop in findElements(propstat, 'prop')) {
             final resourceTypeElements = findElements(prop, 'resourcetype');
@@ -69,38 +69,38 @@ class WebdavXml {
             // mimeType
             final mimeTypeElements = findElements(prop, 'getcontenttype');
             String mimeType =
-                mimeTypeElements.isNotEmpty ? mimeTypeElements.single.text : '';
+                mimeTypeElements.isNotEmpty ? mimeTypeElements.single.innerText : '';
 
             // size
             int size = 0;
             if (!isDir) {
               final sizeElements = findElements(prop, 'getcontentlength');
               size = sizeElements.isNotEmpty
-                  ? int.parse(sizeElements.single.text)
+                  ? int.parse(sizeElements.single.innerText)
                   : 0;
             }
 
             // eTag
             final eTagElements = findElements(prop, 'getetag');
             String eTag =
-                eTagElements.isNotEmpty ? eTagElements.single.text : '';
+                eTagElements.isNotEmpty ? eTagElements.single.innerText : '';
 
             // create time
             final cTimeElements = findElements(prop, 'creationdate');
             DateTime? cTime = cTimeElements.isNotEmpty
-                ? DateTime.parse(cTimeElements.single.text).toLocal()
+                ? DateTime.parse(cTimeElements.single.innerText).toLocal()
                 : null;
 
             // modified time
             final mTimeElements = findElements(prop, 'getlastmodified');
             DateTime? mTime = mTimeElements.isNotEmpty
-                ? str2LocalTime(mTimeElements.single.text)
+                ? str2LocalTime(mTimeElements.single.innerText)
                 : null;
 
             //
             var str = Uri.decodeFull(href);
             var name = path2Name(str);
-            var filePath = fixPrefix(str.replaceFirst(uriSuffix, ""));
+            var filePath = fixPrefix(str.replaceFirst(uriPath, ""));
 
             if (isDir) {
               filePath = fixSlash(filePath);

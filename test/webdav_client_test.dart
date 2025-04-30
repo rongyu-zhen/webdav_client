@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -56,15 +57,22 @@ void main() {
     });
   });
 
-  // remove
-  group('remove', () {
-    test('remove a folder', () async {
-      await client.remove('/new folder/new folder2/');
-    });
+  group('write', () {
+    // It is best not to open debug mode, otherwise the byte data is too large and the output results in IDE cards, 😄
+    test('write data to server', () async {
+      await client.write('/new folder/新建文本文档.txt', Uint8List.fromList([0]),
+          onProgress: (c, t) {
+        print(c / t);
+      });
+    }, timeout: Timeout.none);
 
-    test('remove a file', () async {
-      await client.remove('/new folder/新建文本文档.txt');
-    });
+    test('write a file to server', () async {
+      CancelToken c = CancelToken();
+      await client.writeFromFile('./README.md', '/新建文件夹/README.md',
+          onProgress: (c, t) {
+        print(c / t);
+      }, cancelToken: c);
+    }, timeout: Timeout.none);
   });
 
   // rename
@@ -74,55 +82,46 @@ void main() {
     });
 
     test('rename a file', () async {
-      await client.rename('/新建文件夹/test.dart.txt', '/新建文件夹/test2.dart', true);
+      await client.rename('/新建文件夹2/README.md', '/新建文件夹2/README222.md', true);
     });
   });
 
   group('copy', () {
     // 如果是文件夹，有些webdav服务，会把文件夹A内的所有复制到B文件夹内且删除B文件夹内的所有数据
     test('copy a folder', () async {
-      await client.copy('/新建文件夹/新建文件夹2/', '/new folder/folder/', true);
+      await client.copy('/新建文件夹2/', '/new folder/folder/', true);
     });
 
     test('copy a file', () async {
-      await client.copy('/新建文件夹/test2.dart', '/new folder/copy.bmp', true);
+      await client.copy('/新建文件夹2/README222.md', '/new folder/README.md', true);
     });
   });
 
   group('read', () {
     test('read remote file', () async {
-      await client.read('/f/vpn2.exe', onProgress: (c, t) {
+      await client.read('/new folder/README.md', onProgress: (c, t) {
         print(c / t);
       });
     }, timeout: Timeout.none);
 
     test('read remote file 2 local file', () async {
-      await client.read2File('/f/vpn2.exe', 'F:/download/1v.exe',
+      await client.read2File('/new folder/README.md', './test/README.md',
           onProgress: (c, t) {
         print(c / t);
       });
     }, timeout: Timeout.none);
   });
 
-  group('write', () {
-    // It is best not to open debug mode, otherwise the byte data is too large and the output results in IDE cards, 😄
-    test('write data to server', () async {
-      var datas = await client.read('/f/vpn2.exe', onProgress: (c, t) {
-        print(c / t);
-      });
-      await client.write('/ff/vpn2.exe', Uint8List.fromList(datas),
-          onProgress: (c, t) {
-        print(c / t);
-      });
-    }, timeout: Timeout.none);
+  // remove
+  group('remove', () {
+    test('remove a file', () async {
+      await client.remove('/new folder/新建文本文档.txt');
+      await File('./test/README.md').delete();
+    });
 
-    test('write a file to server', () async {
-      CancelToken c = CancelToken();
-      await client.writeFromFile(
-          'F:/download/VMware-player.exe', '/test100/VMware-player.exe',
-          onProgress: (c, t) {
-        print(c / t);
-      }, cancelToken: c);
-    }, timeout: Timeout.none);
+    test('remove folder', () async {
+      await client.remove('/new folder/');
+      await client.remove('/新建文件夹2/');
+    });
   });
 }

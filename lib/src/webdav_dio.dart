@@ -72,15 +72,19 @@ class WdDio with DioMixin implements Dio {
       optionsHandler(options);
     }
 
+    Uri uri = Uri.parse(
+      '${path.startsWith(RegExp(r'(http|https)://')) ? path : join(self.uri, path)}',
+    );
+
     // authorization
-    String? str = self.auth.authorize(method, path);
+    String? str = self.auth.authorize(method, uri.path);
+
     if (str != null) {
       options.headers?['authorization'] = str;
     }
 
     var resp = await this.requestUri<T>(
-      Uri.parse(
-          '${path.startsWith(RegExp(r'(http|https)://')) ? path : join(self.uri, path)}'),
+      uri,
       options: options,
       data: data,
       onSendProgress: onSendProgress,
@@ -308,8 +312,8 @@ class WdDio with DioMixin implements Dio {
         // onReceiveProgress: onProgress,
         cancelToken: cancelToken,
       );
-    } on DioError catch (e) {
-      if (e.type == DioErrorType.badResponse) {
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.badResponse) {
         if (e.response!.requestOptions.receiveDataWhenStatusError == true) {
           var res = await transformer.transformResponse(
             e.response!.requestOptions..responseType = ResponseType.json,
@@ -384,7 +388,7 @@ class WdDio with DioMixin implements Dio {
           try {
             await subscription.cancel();
           } finally {
-            completer.completeError(DioError(
+            completer.completeError(DioException(
               requestOptions: resp.requestOptions,
               error: err,
             ));
@@ -398,7 +402,7 @@ class WdDio with DioMixin implements Dio {
           await raf.close();
           completer.complete(resp);
         } catch (err) {
-          completer.completeError(DioError(
+          completer.completeError(DioException(
             requestOptions: resp.requestOptions,
             error: err,
           ));
@@ -408,7 +412,7 @@ class WdDio with DioMixin implements Dio {
         try {
           await _closeAndDelete();
         } finally {
-          completer.completeError(DioError(
+          completer.completeError(DioException(
             requestOptions: resp.requestOptions,
             error: e,
           ));
@@ -433,11 +437,11 @@ class WdDio with DioMixin implements Dio {
         await subscription.cancel();
         await _closeAndDelete();
         if (err is TimeoutException) {
-          throw DioError(
+          throw DioException(
             requestOptions: resp.requestOptions,
             error:
                 'Receiving data timeout[${resp.requestOptions.receiveTimeout}ms]',
-            type: DioErrorType.receiveTimeout,
+            type: DioExceptionType.receiveTimeout,
           );
         } else {
           throw err;

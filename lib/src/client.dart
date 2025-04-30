@@ -13,7 +13,7 @@ class Client {
   /// WebDAV url
   final String uri;
 
-  final String uriSuffix;
+  final String uriPath;
 
   /// Wrapped http client
   WdDio c;
@@ -29,7 +29,7 @@ class Client {
     required this.c,
     required this.auth,
     this.debug = false,
-  }): uriSuffix = getUriSuffix(uri);
+  }) : uriPath = getUriPath(uri);
 
   // methods--------------------------------
 
@@ -64,29 +64,26 @@ class Client {
 
   /// Read all files in a folder
   Future<List<File>> readDir(String path, [CancelToken? cancelToken]) async {
-    path = fixSlashes(path);
     var resp = await this
         .c
         .wdPropfind(this, path, true, fileXmlStr, cancelToken: cancelToken);
 
     String str = resp.data;
-    return WebdavXml.toFiles(uriSuffix, str);
+    return WebdavXml.toFiles(uriPath, str);
   }
 
   /// Read a single files properties
   Future<File> readProps(String path, [CancelToken? cancelToken]) async {
-    path = fixSlashes(path);
     var resp = await this
         .c
         .wdPropfind(this, path, true, fileXmlStr, cancelToken: cancelToken);
 
     String str = resp.data;
-    return WebdavXml.toFiles(uriSuffix, str, skipSelf: false).first;
+    return WebdavXml.toFiles(uriPath, str, skipSelf: false).first;
   }
 
   /// Create a folder
   Future<void> mkdir(String path, [CancelToken? cancelToken]) async {
-    path = fixSlashes(path);
     var resp = await this.c.wdMkcol(this, path, cancelToken: cancelToken);
     var status = resp.statusCode;
     if (status != 201 && status != 405) {
@@ -96,7 +93,6 @@ class Client {
 
   /// Recursively create folders
   Future<void> mkdirAll(String path, [CancelToken? cancelToken]) async {
-    path = fixSlashes(path);
     var resp = await this.c.wdMkcol(this, path, cancelToken: cancelToken);
     var status = resp.statusCode;
     if (status == 201 || status == 405) {
@@ -219,10 +215,14 @@ class Client {
 }
 
 /// create new client
-Client newClient(String uri,
-    {String user = '', String password = '', bool debug = false}) {
+Client newClient(
+  String uri, {
+  String user = '',
+  String password = '',
+  bool debug = false,
+}) {
   return Client(
-    uri: fixSlash(uri),
+    uri: uri,
     c: WdDio(debug: debug),
     auth: Auth(user: user, pwd: password),
     debug: debug,
