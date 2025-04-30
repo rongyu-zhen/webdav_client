@@ -40,7 +40,8 @@ class WebdavXml {
     list.forEach((element) {
       // name
       final hrefElements = findElements(element, 'href');
-      String href = hrefElements.isNotEmpty ? hrefElements.single.innerText : '';
+      String href =
+          hrefElements.isNotEmpty ? hrefElements.single.innerText : '';
 
       // propstats
       var props = findElements(element, 'propstat');
@@ -68,8 +69,9 @@ class WebdavXml {
 
             // mimeType
             final mimeTypeElements = findElements(prop, 'getcontenttype');
-            String mimeType =
-                mimeTypeElements.isNotEmpty ? mimeTypeElements.single.innerText : '';
+            String mimeType = mimeTypeElements.isNotEmpty
+                ? mimeTypeElements.single.innerText
+                : '';
 
             // size
             int size = 0;
@@ -97,14 +99,10 @@ class WebdavXml {
                 ? str2LocalTime(mTimeElements.single.innerText)
                 : null;
 
-            //
             var str = Uri.decodeFull(href);
             var name = path2Name(str);
-            var filePath = fixPrefix(str.replaceFirst(uriPath, ""));
 
-            if (isDir) {
-              filePath = fixSlash(filePath);
-            }
+            var filePath = str.replaceFirst(uriPath, "");
 
             files.add(File(
               path: filePath,

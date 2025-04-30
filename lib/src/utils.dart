@@ -54,19 +54,19 @@ DateTime? str2LocalTime(String? str) {
 }
 
 // create response error
-DioError newResponseError(Response resp) {
-  return DioError(
+DioException newResponseError(Response resp) {
+  return DioException(
       requestOptions: resp.requestOptions,
       response: resp,
-      type: DioErrorType.badResponse,
+      type: DioExceptionType.badResponse,
       error: resp.statusMessage);
 }
 
 // create xml error
-DioError newXmlError(dynamic err) {
-  return DioError(
+DioException newXmlError(dynamic err) {
+  return DioException(
     requestOptions: RequestOptions(path: '/'),
-    type: DioErrorType.unknown,
+    type: DioExceptionType.unknown,
     error: err,
   );
 }
@@ -92,22 +92,6 @@ String ltrim(String str, [String? chars]) {
 String rtrim(String str, [String? chars]) {
   var pattern = chars != null ? new RegExp('[$chars]+\$') : new RegExp(r'\s+$');
   return str.replaceAll(pattern, '');
-}
-
-// 添加 '/' 后缀
-String fixSlash(String s) {
-  if (!s.endsWith('/')) {
-    return s + '/';
-  }
-  return s;
-}
-
-// 添加 '/' 前缀
-String fixPrefix(String s) {
-  if (!s.startsWith('/')) {
-    s = '/${s}';
-  }
-  return s;
 }
 
 // 使用 '/' 连接path
